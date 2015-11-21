@@ -12,6 +12,8 @@
 
 namespace Menu;
 
+use Propel\Runtime\Connection\ConnectionInterface;
+use Thelia\Install\Database;
 use Thelia\Module\BaseModule;
 
 class Menu extends BaseModule
@@ -19,10 +21,9 @@ class Menu extends BaseModule
     /** @var string */
     const DOMAIN_NAME = 'menu';
 
-    /*
-     * You may now override BaseModuleInterface methods, such as:
-     * install, destroy, preActivation, postActivation, preDeactivation, postDeactivation
-     *
-     * Have fun !
-     */
+    public function postActivation(ConnectionInterface $con = null)
+    {
+        $database = new Database($con->getWrappedConnection());
+        $database->insertSql(null, array(THELIA_ROOT . '/local/modules/Menu/Config/thelia.sql'));
+    }
 }
