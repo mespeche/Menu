@@ -11,9 +11,7 @@
     </loops>
 
     <forms>
-        <!--
-        <form name="MyFormName" class="Menu\Form\MySuperForm" />
-        -->
+        <form name="menu.admin.creation" class="Menu\Form\MenuCreationForm"/>
     </forms>
 
     <commands>
