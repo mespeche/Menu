@@ -1,7 +1,15 @@
 {
-  "name": "your-vendor/menu-module",
+  "name": "thelia/menu-module",
   "license": "LGPL-3.0+",
   "type": "thelia-module",
+  "description": "Create dynamics menus for Thelia",
+  "authors": [
+    {
+      "name": "Michaël Espeche",
+      "email": "michael.espeche@gmail.com",
+      "homepage": "https://github.com/mespeche"
+    }
+  ],
   "require": {
     "thelia/installer": "~1.1"
   },
