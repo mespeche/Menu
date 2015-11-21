@@ -4,7 +4,6 @@ namespace Menu\Model;
 
 use Menu\Model\Base\MenuQuery as BaseMenuQuery;
 
-
 /**
  * Skeleton subclass for performing query and update operations on the 'menu' table.
  *
@@ -17,5 +16,8 @@ use Menu\Model\Base\MenuQuery as BaseMenuQuery;
  */
 class MenuQuery extends BaseMenuQuery
 {
-
+    public static function getMenuByIdentifier($identifier)
+    {
+        return self::create()->findOneByIdentifier($identifier);
+    }
 } // MenuQuery

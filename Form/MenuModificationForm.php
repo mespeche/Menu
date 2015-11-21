@@ -20,68 +20,48 @@
 /*	    along with this program. If not, see <http://www.gnu.org/licenses/>.         */
 /*                                                                                   */
 /*************************************************************************************/
+
 namespace Menu\Form;
 
 use Menu\Model\MenuQuery;
-use Thelia\Form\BaseForm;
-use Symfony\Component\Validator\Constraints\Callback;
-use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\GreaterThan;
 use Symfony\Component\Validator\ExecutionContextInterface;
-use Thelia\Core\Translation\Translator;
 
-class MenuCreationForm extends BaseForm
+/**
+ * Class MenuModificationForm
+ * @package Thelia\Form
+ * @author Michaël Espeche <michael.espeche@gmail.com>
+ */
+class MenuModificationForm extends MenuCreationForm
 {    
+
     protected function buildForm()
     {
-        $this->formBuilder
-            ->add('name', 'text', array(
-                    'constraints' => array(
-                        new NotBlank()
-                    ),
-                    'label' => Translator::getInstance()->trans('Name'),
-                    'label_attr' => array(
-                        'for' => 'menu_name'
-                    )
-                ))
-            ->add('identifier', 'text', array(
-                    'constraints' => array(
-                        new NotBlank(),
-                        new Callback(array(
-                            "methods" => array(
-                                array($this, "verifyExisting")
-                            )
-                        ))
-                    ),
-                    'label' => Translator::getInstance()->trans('Unique identifier', array(), 'menu'),
-                    'label_attr' => array(
-                        'for' => 'menu_identifier'
-                    )
-                ))            
-            ->add('visible', 'integer', array(
-                    'label' => Translator::getInstance()->trans('Visible ?'),
-                    'label_attr' => array(
-                        'for' => 'menu_visible'
-                    )
-                ))
-            ->add("locale", "text", array(
-                    "constraints" => array(
-                        new NotBlank()
-                    )
-                ))
+        parent::buildForm();
 
+        $this->formBuilder
+            ->add("id", "hidden", array("constraints" => array(new GreaterThan(array('value' => 0)))))
         ;
+
+        // Add standard description fields, excluding title and locale, which a re defined in parent class
+        $this->addStandardDescFields(array('locale'));
     }
-    
+
     public function verifyExisting($value, ExecutionContextInterface $context)
     {
-        $menu = MenuQuery::getMenuByIdentifier($value);
-        if ($menu) {
-            $context->addViolation("This menu identifier already exist.");
+        $menuId = $this->getRequest()->get('menu_id');
+        $menuUpdated = MenuQuery::create()->findPk($menuId);
+
+        // If the sent identifier isn't identical to the menu identifier being updated
+        if ($menuUpdated->getIdentifier() !== $value) {
+
+            // Check if menu with this identifier exist
+            parent::verifyExisting($value, $context);
         }
     }
-    
+
     public function getName()
     {
-        return 'admin_menu_creation';
+        return "admin_menu_modification";
     }
 }

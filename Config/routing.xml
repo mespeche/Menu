@@ -4,28 +4,28 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <!--
-
-    if a /admin/module/menu/ route is provided, a "Configuration" button will be displayed
-    for the module in the module list. Clicking this button will invoke this route.
-
-    <route id="my_route_id" path="/admin/module/menu">
-        <default key="_controller">Menu\Full\Class\Name\Of\YourConfigurationController::methodName</default>
+    <route id="admin.menu.create" path="/admin/module/Menu/create">
+        <default key="_controller">Menu\Controller\Admin\MenuController::createAction</default>
     </route>
 
-    <route id="my_route_id" path="/admin/module/menu/route-name">
-        <default key="_controller">Menu\Full\Class\Name\Of\YourAdminController::methodName</default>
+    <route id="admin.menu.update" path="/admin/module/Menu/update">
+        <default key="_controller">Menu\Controller\Admin\MenuController::updateAction</default>
     </route>
 
-    <route id="my_route_id" path="/my/route/name">
-        <default key="_controller">Menu\Full\Class\Name\Of\YourOtherController::methodName</default>
+    <route id="admin.menu.save" path="/admin/module/Menu/save">
+        <default key="_controller">Menu\Controller\Admin\MenuController::processUpdateAction</default>
     </route>
 
-    ...add as many routes as required.
-
-    <route>
-    ...
+    <route id="admin.menu.view" path="/admin/module/Menu/view">
+        <default key="_controller">Menu\Controller\Admin\MenuController::viewAction</default>
     </route>
-    -->
+
+    <route id="admin.menu.delete" path="/admin/module/Menu/delete">
+        <default key="_controller">Menu\Controller\Admin\MenuController::deleteAction</default>
+    </route>
+
+    <route id="admin.menu.toggle-online" path="/admin/module/Menu/toggle-online">
+        <default key="_controller">Menu\Controller\Admin\MenuController::setToggleVisibilityAction</default>
+    </route>
 
 </routes>
