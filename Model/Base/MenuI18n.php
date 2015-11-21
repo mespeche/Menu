@@ -2,33 +2,29 @@
 
 namespace Menu\Model\Base;
 
-use \DateTime;
 use \Exception;
 use \PDO;
 use Menu\Model\Menu as ChildMenu;
-use Menu\Model\MenuI18n as ChildMenuI18n;
 use Menu\Model\MenuI18nQuery as ChildMenuI18nQuery;
 use Menu\Model\MenuQuery as ChildMenuQuery;
-use Menu\Model\Map\MenuTableMap;
+use Menu\Model\Map\MenuI18nTableMap;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Collection\Collection;
-use Propel\Runtime\Collection\ObjectCollection;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Exception\BadMethodCallException;
 use Propel\Runtime\Exception\PropelException;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Parser\AbstractParser;
-use Propel\Runtime\Util\PropelDateTime;
 
-abstract class Menu implements ActiveRecordInterface
+abstract class MenuI18n implements ActiveRecordInterface
 {
     /**
      * TableMap class name
      */
-    const TABLE_MAP = '\\Menu\\Model\\Map\\MenuTableMap';
+    const TABLE_MAP = '\\Menu\\Model\\Map\\MenuI18nTableMap';
 
 
     /**
@@ -64,40 +60,22 @@ abstract class Menu implements ActiveRecordInterface
     protected $id;
 
     /**
-     * The value for the visible field.
-     * @var        int
-     */
-    protected $visible;
-
-    /**
-     * The value for the position field.
-     * @var        int
-     */
-    protected $position;
-
-    /**
-     * The value for the identifier field.
+     * The value for the locale field.
+     * Note: this column has a database default value of: 'en_US'
      * @var        string
      */
-    protected $identifier;
+    protected $locale;
 
     /**
-     * The value for the created_at field.
+     * The value for the name field.
      * @var        string
      */
-    protected $created_at;
+    protected $name;
 
     /**
-     * The value for the updated_at field.
-     * @var        string
+     * @var        Menu
      */
-    protected $updated_at;
-
-    /**
-     * @var        ObjectCollection|ChildMenuI18n[] Collection to store aggregation of ChildMenuI18n objects.
-     */
-    protected $collMenuI18ns;
-    protected $collMenuI18nsPartial;
+    protected $aMenu;
 
     /**
      * Flag to prevent endless save loop, if this object is referenced
@@ -107,31 +85,24 @@ abstract class Menu implements ActiveRecordInterface
      */
     protected $alreadyInSave = false;
 
-    // i18n behavior
-
     /**
-     * Current locale
-     * @var        string
+     * Applies default values to this object.
+     * This method should be called from the object's constructor (or
+     * equivalent initialization method).
+     * @see __construct()
      */
-    protected $currentLocale = 'en_US';
+    public function applyDefaultValues()
+    {
+        $this->locale = 'en_US';
+    }
 
     /**
-     * Current translation objects
-     * @var        array[ChildMenuI18n]
-     */
-    protected $currentTranslations;
-
-    /**
-     * An array of objects scheduled for deletion.
-     * @var ObjectCollection
-     */
-    protected $menuI18nsScheduledForDeletion = null;
-
-    /**
-     * Initializes internal state of Menu\Model\Base\Menu object.
+     * Initializes internal state of Menu\Model\Base\MenuI18n object.
+     * @see applyDefaults()
      */
     public function __construct()
     {
+        $this->applyDefaultValues();
     }
 
     /**
@@ -223,9 +194,9 @@ abstract class Menu implements ActiveRecordInterface
     }
 
     /**
-     * Compares this with another <code>Menu</code> instance.  If
-     * <code>obj</code> is an instance of <code>Menu</code>, delegates to
-     * <code>equals(Menu)</code>.  Otherwise, returns <code>false</code>.
+     * Compares this with another <code>MenuI18n</code> instance.  If
+     * <code>obj</code> is an instance of <code>MenuI18n</code>, delegates to
+     * <code>equals(MenuI18n)</code>.  Otherwise, returns <code>false</code>.
      *
      * @param  mixed   $obj The object to compare to.
      * @return boolean Whether equal to the object specified.
@@ -308,7 +279,7 @@ abstract class Menu implements ActiveRecordInterface
      * @param string $name  The virtual column name
      * @param mixed  $value The value to give to the virtual column
      *
-     * @return Menu The current object, for fluid interface
+     * @return MenuI18n The current object, for fluid interface
      */
     public function setVirtualColumn($name, $value)
     {
@@ -340,7 +311,7 @@ abstract class Menu implements ActiveRecordInterface
      *                       or a format name ('XML', 'YAML', 'JSON', 'CSV')
      * @param string $data The source data to import from
      *
-     * @return Menu The current object, for fluid interface
+     * @return MenuI18n The current object, for fluid interface
      */
     public function importFrom($parser, $data)
     {
@@ -397,83 +368,32 @@ abstract class Menu implements ActiveRecordInterface
     }
 
     /**
-     * Get the [visible] column value.
-     *
-     * @return   int
-     */
-    public function getVisible()
-    {
-
-        return $this->visible;
-    }
-
-    /**
-     * Get the [position] column value.
-     *
-     * @return   int
-     */
-    public function getPosition()
-    {
-
-        return $this->position;
-    }
-
-    /**
-     * Get the [identifier] column value.
+     * Get the [locale] column value.
      *
      * @return   string
      */
-    public function getIdentifier()
+    public function getLocale()
     {
 
-        return $this->identifier;
+        return $this->locale;
     }
 
     /**
-     * Get the [optionally formatted] temporal [created_at] column value.
+     * Get the [name] column value.
      *
-     *
-     * @param      string $format The date/time format string (either date()-style or strftime()-style).
-     *                            If format is NULL, then the raw \DateTime object will be returned.
-     *
-     * @return mixed Formatted date/time value as string or \DateTime object (if format is NULL), NULL if column is NULL, and 0 if column value is 0000-00-00 00:00:00
-     *
-     * @throws PropelException - if unable to parse/validate the date/time value.
+     * @return   string
      */
-    public function getCreatedAt($format = NULL)
+    public function getName()
     {
-        if ($format === null) {
-            return $this->created_at;
-        } else {
-            return $this->created_at instanceof \DateTime ? $this->created_at->format($format) : null;
-        }
-    }
 
-    /**
-     * Get the [optionally formatted] temporal [updated_at] column value.
-     *
-     *
-     * @param      string $format The date/time format string (either date()-style or strftime()-style).
-     *                            If format is NULL, then the raw \DateTime object will be returned.
-     *
-     * @return mixed Formatted date/time value as string or \DateTime object (if format is NULL), NULL if column is NULL, and 0 if column value is 0000-00-00 00:00:00
-     *
-     * @throws PropelException - if unable to parse/validate the date/time value.
-     */
-    public function getUpdatedAt($format = NULL)
-    {
-        if ($format === null) {
-            return $this->updated_at;
-        } else {
-            return $this->updated_at instanceof \DateTime ? $this->updated_at->format($format) : null;
-        }
+        return $this->name;
     }
 
     /**
      * Set the value of [id] column.
      *
      * @param      int $v new value
-     * @return   \Menu\Model\Menu The current object (for fluent API support)
+     * @return   \Menu\Model\MenuI18n The current object (for fluent API support)
      */
     public function setId($v)
     {
@@ -483,7 +403,11 @@ abstract class Menu implements ActiveRecordInterface
 
         if ($this->id !== $v) {
             $this->id = $v;
-            $this->modifiedColumns[MenuTableMap::ID] = true;
+            $this->modifiedColumns[MenuI18nTableMap::ID] = true;
+        }
+
+        if ($this->aMenu !== null && $this->aMenu->getId() !== $v) {
+            $this->aMenu = null;
         }
 
 
@@ -491,109 +415,46 @@ abstract class Menu implements ActiveRecordInterface
     } // setId()
 
     /**
-     * Set the value of [visible] column.
-     *
-     * @param      int $v new value
-     * @return   \Menu\Model\Menu The current object (for fluent API support)
-     */
-    public function setVisible($v)
-    {
-        if ($v !== null) {
-            $v = (int) $v;
-        }
-
-        if ($this->visible !== $v) {
-            $this->visible = $v;
-            $this->modifiedColumns[MenuTableMap::VISIBLE] = true;
-        }
-
-
-        return $this;
-    } // setVisible()
-
-    /**
-     * Set the value of [position] column.
-     *
-     * @param      int $v new value
-     * @return   \Menu\Model\Menu The current object (for fluent API support)
-     */
-    public function setPosition($v)
-    {
-        if ($v !== null) {
-            $v = (int) $v;
-        }
-
-        if ($this->position !== $v) {
-            $this->position = $v;
-            $this->modifiedColumns[MenuTableMap::POSITION] = true;
-        }
-
-
-        return $this;
-    } // setPosition()
-
-    /**
-     * Set the value of [identifier] column.
+     * Set the value of [locale] column.
      *
      * @param      string $v new value
-     * @return   \Menu\Model\Menu The current object (for fluent API support)
+     * @return   \Menu\Model\MenuI18n The current object (for fluent API support)
      */
-    public function setIdentifier($v)
+    public function setLocale($v)
     {
         if ($v !== null) {
             $v = (string) $v;
         }
 
-        if ($this->identifier !== $v) {
-            $this->identifier = $v;
-            $this->modifiedColumns[MenuTableMap::IDENTIFIER] = true;
+        if ($this->locale !== $v) {
+            $this->locale = $v;
+            $this->modifiedColumns[MenuI18nTableMap::LOCALE] = true;
         }
 
 
         return $this;
-    } // setIdentifier()
+    } // setLocale()
 
     /**
-     * Sets the value of [created_at] column to a normalized version of the date/time value specified.
+     * Set the value of [name] column.
      *
-     * @param      mixed $v string, integer (timestamp), or \DateTime value.
-     *               Empty strings are treated as NULL.
-     * @return   \Menu\Model\Menu The current object (for fluent API support)
+     * @param      string $v new value
+     * @return   \Menu\Model\MenuI18n The current object (for fluent API support)
      */
-    public function setCreatedAt($v)
+    public function setName($v)
     {
-        $dt = PropelDateTime::newInstance($v, null, '\DateTime');
-        if ($this->created_at !== null || $dt !== null) {
-            if ($dt !== $this->created_at) {
-                $this->created_at = $dt;
-                $this->modifiedColumns[MenuTableMap::CREATED_AT] = true;
-            }
-        } // if either are not null
+        if ($v !== null) {
+            $v = (string) $v;
+        }
+
+        if ($this->name !== $v) {
+            $this->name = $v;
+            $this->modifiedColumns[MenuI18nTableMap::NAME] = true;
+        }
 
 
         return $this;
-    } // setCreatedAt()
-
-    /**
-     * Sets the value of [updated_at] column to a normalized version of the date/time value specified.
-     *
-     * @param      mixed $v string, integer (timestamp), or \DateTime value.
-     *               Empty strings are treated as NULL.
-     * @return   \Menu\Model\Menu The current object (for fluent API support)
-     */
-    public function setUpdatedAt($v)
-    {
-        $dt = PropelDateTime::newInstance($v, null, '\DateTime');
-        if ($this->updated_at !== null || $dt !== null) {
-            if ($dt !== $this->updated_at) {
-                $this->updated_at = $dt;
-                $this->modifiedColumns[MenuTableMap::UPDATED_AT] = true;
-            }
-        } // if either are not null
-
-
-        return $this;
-    } // setUpdatedAt()
+    } // setName()
 
     /**
      * Indicates whether the columns in this object are only set to default values.
@@ -605,6 +466,10 @@ abstract class Menu implements ActiveRecordInterface
      */
     public function hasOnlyDefaultValues()
     {
+            if ($this->locale !== 'en_US') {
+                return false;
+            }
+
         // otherwise, everything was equal, so return TRUE
         return true;
     } // hasOnlyDefaultValues()
@@ -632,29 +497,14 @@ abstract class Menu implements ActiveRecordInterface
         try {
 
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 0 + $startcol : MenuTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 0 + $startcol : MenuI18nTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
             $this->id = (null !== $col) ? (int) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : MenuTableMap::translateFieldName('Visible', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->visible = (null !== $col) ? (int) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : MenuI18nTableMap::translateFieldName('Locale', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->locale = (null !== $col) ? (string) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : MenuTableMap::translateFieldName('Position', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->position = (null !== $col) ? (int) $col : null;
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 3 + $startcol : MenuTableMap::translateFieldName('Identifier', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->identifier = (null !== $col) ? (string) $col : null;
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 4 + $startcol : MenuTableMap::translateFieldName('CreatedAt', TableMap::TYPE_PHPNAME, $indexType)];
-            if ($col === '0000-00-00 00:00:00') {
-                $col = null;
-            }
-            $this->created_at = (null !== $col) ? PropelDateTime::newInstance($col, null, '\DateTime') : null;
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 5 + $startcol : MenuTableMap::translateFieldName('UpdatedAt', TableMap::TYPE_PHPNAME, $indexType)];
-            if ($col === '0000-00-00 00:00:00') {
-                $col = null;
-            }
-            $this->updated_at = (null !== $col) ? PropelDateTime::newInstance($col, null, '\DateTime') : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : MenuI18nTableMap::translateFieldName('Name', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->name = (null !== $col) ? (string) $col : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -663,10 +513,10 @@ abstract class Menu implements ActiveRecordInterface
                 $this->ensureConsistency();
             }
 
-            return $startcol + 6; // 6 = MenuTableMap::NUM_HYDRATE_COLUMNS.
+            return $startcol + 3; // 3 = MenuI18nTableMap::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
-            throw new PropelException("Error populating \Menu\Model\Menu object", 0, $e);
+            throw new PropelException("Error populating \Menu\Model\MenuI18n object", 0, $e);
         }
     }
 
@@ -685,6 +535,9 @@ abstract class Menu implements ActiveRecordInterface
      */
     public function ensureConsistency()
     {
+        if ($this->aMenu !== null && $this->id !== $this->aMenu->getId()) {
+            $this->aMenu = null;
+        }
     } // ensureConsistency
 
     /**
@@ -708,13 +561,13 @@ abstract class Menu implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getReadConnection(MenuTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getReadConnection(MenuI18nTableMap::DATABASE_NAME);
         }
 
         // We don't need to alter the object instance pool; we're just modifying this instance
         // already in the pool.
 
-        $dataFetcher = ChildMenuQuery::create(null, $this->buildPkeyCriteria())->setFormatter(ModelCriteria::FORMAT_STATEMENT)->find($con);
+        $dataFetcher = ChildMenuI18nQuery::create(null, $this->buildPkeyCriteria())->setFormatter(ModelCriteria::FORMAT_STATEMENT)->find($con);
         $row = $dataFetcher->fetch();
         $dataFetcher->close();
         if (!$row) {
@@ -724,8 +577,7 @@ abstract class Menu implements ActiveRecordInterface
 
         if ($deep) {  // also de-associate any related objects?
 
-            $this->collMenuI18ns = null;
-
+            $this->aMenu = null;
         } // if (deep)
     }
 
@@ -735,8 +587,8 @@ abstract class Menu implements ActiveRecordInterface
      * @param      ConnectionInterface $con
      * @return void
      * @throws PropelException
-     * @see Menu::setDeleted()
-     * @see Menu::isDeleted()
+     * @see MenuI18n::setDeleted()
+     * @see MenuI18n::isDeleted()
      */
     public function delete(ConnectionInterface $con = null)
     {
@@ -745,12 +597,12 @@ abstract class Menu implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getWriteConnection(MenuTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(MenuI18nTableMap::DATABASE_NAME);
         }
 
         $con->beginTransaction();
         try {
-            $deleteQuery = ChildMenuQuery::create()
+            $deleteQuery = ChildMenuI18nQuery::create()
                 ->filterByPrimaryKey($this->getPrimaryKey());
             $ret = $this->preDelete($con);
             if ($ret) {
@@ -787,7 +639,7 @@ abstract class Menu implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getWriteConnection(MenuTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(MenuI18nTableMap::DATABASE_NAME);
         }
 
         $con->beginTransaction();
@@ -796,19 +648,8 @@ abstract class Menu implements ActiveRecordInterface
             $ret = $this->preSave($con);
             if ($isInsert) {
                 $ret = $ret && $this->preInsert($con);
-                // timestampable behavior
-                if (!$this->isColumnModified(MenuTableMap::CREATED_AT)) {
-                    $this->setCreatedAt(time());
-                }
-                if (!$this->isColumnModified(MenuTableMap::UPDATED_AT)) {
-                    $this->setUpdatedAt(time());
-                }
             } else {
                 $ret = $ret && $this->preUpdate($con);
-                // timestampable behavior
-                if ($this->isModified() && !$this->isColumnModified(MenuTableMap::UPDATED_AT)) {
-                    $this->setUpdatedAt(time());
-                }
             }
             if ($ret) {
                 $affectedRows = $this->doSave($con);
@@ -818,7 +659,7 @@ abstract class Menu implements ActiveRecordInterface
                     $this->postUpdate($con);
                 }
                 $this->postSave($con);
-                MenuTableMap::addInstanceToPool($this);
+                MenuI18nTableMap::addInstanceToPool($this);
             } else {
                 $affectedRows = 0;
             }
@@ -848,6 +689,18 @@ abstract class Menu implements ActiveRecordInterface
         if (!$this->alreadyInSave) {
             $this->alreadyInSave = true;
 
+            // We call the save method on the following object(s) if they
+            // were passed to this object by their corresponding set
+            // method.  This object relates to these object(s) by a
+            // foreign key reference.
+
+            if ($this->aMenu !== null) {
+                if ($this->aMenu->isModified() || $this->aMenu->isNew()) {
+                    $affectedRows += $this->aMenu->save($con);
+                }
+                $this->setMenu($this->aMenu);
+            }
+
             if ($this->isNew() || $this->isModified()) {
                 // persist changes
                 if ($this->isNew()) {
@@ -857,23 +710,6 @@ abstract class Menu implements ActiveRecordInterface
                 }
                 $affectedRows += 1;
                 $this->resetModified();
-            }
-
-            if ($this->menuI18nsScheduledForDeletion !== null) {
-                if (!$this->menuI18nsScheduledForDeletion->isEmpty()) {
-                    \Menu\Model\MenuI18nQuery::create()
-                        ->filterByPrimaryKeys($this->menuI18nsScheduledForDeletion->getPrimaryKeys(false))
-                        ->delete($con);
-                    $this->menuI18nsScheduledForDeletion = null;
-                }
-            }
-
-                if ($this->collMenuI18ns !== null) {
-            foreach ($this->collMenuI18ns as $referrerFK) {
-                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
-                        $affectedRows += $referrerFK->save($con);
-                    }
-                }
             }
 
             $this->alreadyInSave = false;
@@ -896,33 +732,20 @@ abstract class Menu implements ActiveRecordInterface
         $modifiedColumns = array();
         $index = 0;
 
-        $this->modifiedColumns[MenuTableMap::ID] = true;
-        if (null !== $this->id) {
-            throw new PropelException('Cannot insert a value for auto-increment primary key (' . MenuTableMap::ID . ')');
-        }
 
          // check the columns in natural order for more readable SQL queries
-        if ($this->isColumnModified(MenuTableMap::ID)) {
+        if ($this->isColumnModified(MenuI18nTableMap::ID)) {
             $modifiedColumns[':p' . $index++]  = 'ID';
         }
-        if ($this->isColumnModified(MenuTableMap::VISIBLE)) {
-            $modifiedColumns[':p' . $index++]  = 'VISIBLE';
+        if ($this->isColumnModified(MenuI18nTableMap::LOCALE)) {
+            $modifiedColumns[':p' . $index++]  = 'LOCALE';
         }
-        if ($this->isColumnModified(MenuTableMap::POSITION)) {
-            $modifiedColumns[':p' . $index++]  = 'POSITION';
-        }
-        if ($this->isColumnModified(MenuTableMap::IDENTIFIER)) {
-            $modifiedColumns[':p' . $index++]  = 'IDENTIFIER';
-        }
-        if ($this->isColumnModified(MenuTableMap::CREATED_AT)) {
-            $modifiedColumns[':p' . $index++]  = 'CREATED_AT';
-        }
-        if ($this->isColumnModified(MenuTableMap::UPDATED_AT)) {
-            $modifiedColumns[':p' . $index++]  = 'UPDATED_AT';
+        if ($this->isColumnModified(MenuI18nTableMap::NAME)) {
+            $modifiedColumns[':p' . $index++]  = 'NAME';
         }
 
         $sql = sprintf(
-            'INSERT INTO menu (%s) VALUES (%s)',
+            'INSERT INTO menu_i18n (%s) VALUES (%s)',
             implode(', ', $modifiedColumns),
             implode(', ', array_keys($modifiedColumns))
         );
@@ -934,20 +757,11 @@ abstract class Menu implements ActiveRecordInterface
                     case 'ID':
                         $stmt->bindValue($identifier, $this->id, PDO::PARAM_INT);
                         break;
-                    case 'VISIBLE':
-                        $stmt->bindValue($identifier, $this->visible, PDO::PARAM_INT);
+                    case 'LOCALE':
+                        $stmt->bindValue($identifier, $this->locale, PDO::PARAM_STR);
                         break;
-                    case 'POSITION':
-                        $stmt->bindValue($identifier, $this->position, PDO::PARAM_INT);
-                        break;
-                    case 'IDENTIFIER':
-                        $stmt->bindValue($identifier, $this->identifier, PDO::PARAM_STR);
-                        break;
-                    case 'CREATED_AT':
-                        $stmt->bindValue($identifier, $this->created_at ? $this->created_at->format("Y-m-d H:i:s") : null, PDO::PARAM_STR);
-                        break;
-                    case 'UPDATED_AT':
-                        $stmt->bindValue($identifier, $this->updated_at ? $this->updated_at->format("Y-m-d H:i:s") : null, PDO::PARAM_STR);
+                    case 'NAME':
+                        $stmt->bindValue($identifier, $this->name, PDO::PARAM_STR);
                         break;
                 }
             }
@@ -956,13 +770,6 @@ abstract class Menu implements ActiveRecordInterface
             Propel::log($e->getMessage(), Propel::LOG_ERR);
             throw new PropelException(sprintf('Unable to execute INSERT statement [%s]', $sql), 0, $e);
         }
-
-        try {
-            $pk = $con->lastInsertId();
-        } catch (Exception $e) {
-            throw new PropelException('Unable to get autoincrement id.', 0, $e);
-        }
-        $this->setId($pk);
 
         $this->setNew(false);
     }
@@ -995,7 +802,7 @@ abstract class Menu implements ActiveRecordInterface
      */
     public function getByName($name, $type = TableMap::TYPE_PHPNAME)
     {
-        $pos = MenuTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
+        $pos = MenuI18nTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
         $field = $this->getByPosition($pos);
 
         return $field;
@@ -1015,19 +822,10 @@ abstract class Menu implements ActiveRecordInterface
                 return $this->getId();
                 break;
             case 1:
-                return $this->getVisible();
+                return $this->getLocale();
                 break;
             case 2:
-                return $this->getPosition();
-                break;
-            case 3:
-                return $this->getIdentifier();
-                break;
-            case 4:
-                return $this->getCreatedAt();
-                break;
-            case 5:
-                return $this->getUpdatedAt();
+                return $this->getName();
                 break;
             default:
                 return null;
@@ -1052,18 +850,15 @@ abstract class Menu implements ActiveRecordInterface
      */
     public function toArray($keyType = TableMap::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array(), $includeForeignObjects = false)
     {
-        if (isset($alreadyDumpedObjects['Menu'][$this->getPrimaryKey()])) {
+        if (isset($alreadyDumpedObjects['MenuI18n'][serialize($this->getPrimaryKey())])) {
             return '*RECURSION*';
         }
-        $alreadyDumpedObjects['Menu'][$this->getPrimaryKey()] = true;
-        $keys = MenuTableMap::getFieldNames($keyType);
+        $alreadyDumpedObjects['MenuI18n'][serialize($this->getPrimaryKey())] = true;
+        $keys = MenuI18nTableMap::getFieldNames($keyType);
         $result = array(
             $keys[0] => $this->getId(),
-            $keys[1] => $this->getVisible(),
-            $keys[2] => $this->getPosition(),
-            $keys[3] => $this->getIdentifier(),
-            $keys[4] => $this->getCreatedAt(),
-            $keys[5] => $this->getUpdatedAt(),
+            $keys[1] => $this->getLocale(),
+            $keys[2] => $this->getName(),
         );
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
@@ -1071,8 +866,8 @@ abstract class Menu implements ActiveRecordInterface
         }
 
         if ($includeForeignObjects) {
-            if (null !== $this->collMenuI18ns) {
-                $result['MenuI18ns'] = $this->collMenuI18ns->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            if (null !== $this->aMenu) {
+                $result['Menu'] = $this->aMenu->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
             }
         }
 
@@ -1092,7 +887,7 @@ abstract class Menu implements ActiveRecordInterface
      */
     public function setByName($name, $value, $type = TableMap::TYPE_PHPNAME)
     {
-        $pos = MenuTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
+        $pos = MenuI18nTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
 
         return $this->setByPosition($pos, $value);
     }
@@ -1112,19 +907,10 @@ abstract class Menu implements ActiveRecordInterface
                 $this->setId($value);
                 break;
             case 1:
-                $this->setVisible($value);
+                $this->setLocale($value);
                 break;
             case 2:
-                $this->setPosition($value);
-                break;
-            case 3:
-                $this->setIdentifier($value);
-                break;
-            case 4:
-                $this->setCreatedAt($value);
-                break;
-            case 5:
-                $this->setUpdatedAt($value);
+                $this->setName($value);
                 break;
         } // switch()
     }
@@ -1148,14 +934,11 @@ abstract class Menu implements ActiveRecordInterface
      */
     public function fromArray($arr, $keyType = TableMap::TYPE_PHPNAME)
     {
-        $keys = MenuTableMap::getFieldNames($keyType);
+        $keys = MenuI18nTableMap::getFieldNames($keyType);
 
         if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
-        if (array_key_exists($keys[1], $arr)) $this->setVisible($arr[$keys[1]]);
-        if (array_key_exists($keys[2], $arr)) $this->setPosition($arr[$keys[2]]);
-        if (array_key_exists($keys[3], $arr)) $this->setIdentifier($arr[$keys[3]]);
-        if (array_key_exists($keys[4], $arr)) $this->setCreatedAt($arr[$keys[4]]);
-        if (array_key_exists($keys[5], $arr)) $this->setUpdatedAt($arr[$keys[5]]);
+        if (array_key_exists($keys[1], $arr)) $this->setLocale($arr[$keys[1]]);
+        if (array_key_exists($keys[2], $arr)) $this->setName($arr[$keys[2]]);
     }
 
     /**
@@ -1165,14 +948,11 @@ abstract class Menu implements ActiveRecordInterface
      */
     public function buildCriteria()
     {
-        $criteria = new Criteria(MenuTableMap::DATABASE_NAME);
+        $criteria = new Criteria(MenuI18nTableMap::DATABASE_NAME);
 
-        if ($this->isColumnModified(MenuTableMap::ID)) $criteria->add(MenuTableMap::ID, $this->id);
-        if ($this->isColumnModified(MenuTableMap::VISIBLE)) $criteria->add(MenuTableMap::VISIBLE, $this->visible);
-        if ($this->isColumnModified(MenuTableMap::POSITION)) $criteria->add(MenuTableMap::POSITION, $this->position);
-        if ($this->isColumnModified(MenuTableMap::IDENTIFIER)) $criteria->add(MenuTableMap::IDENTIFIER, $this->identifier);
-        if ($this->isColumnModified(MenuTableMap::CREATED_AT)) $criteria->add(MenuTableMap::CREATED_AT, $this->created_at);
-        if ($this->isColumnModified(MenuTableMap::UPDATED_AT)) $criteria->add(MenuTableMap::UPDATED_AT, $this->updated_at);
+        if ($this->isColumnModified(MenuI18nTableMap::ID)) $criteria->add(MenuI18nTableMap::ID, $this->id);
+        if ($this->isColumnModified(MenuI18nTableMap::LOCALE)) $criteria->add(MenuI18nTableMap::LOCALE, $this->locale);
+        if ($this->isColumnModified(MenuI18nTableMap::NAME)) $criteria->add(MenuI18nTableMap::NAME, $this->name);
 
         return $criteria;
     }
@@ -1187,30 +967,37 @@ abstract class Menu implements ActiveRecordInterface
      */
     public function buildPkeyCriteria()
     {
-        $criteria = new Criteria(MenuTableMap::DATABASE_NAME);
-        $criteria->add(MenuTableMap::ID, $this->id);
+        $criteria = new Criteria(MenuI18nTableMap::DATABASE_NAME);
+        $criteria->add(MenuI18nTableMap::ID, $this->id);
+        $criteria->add(MenuI18nTableMap::LOCALE, $this->locale);
 
         return $criteria;
     }
 
     /**
-     * Returns the primary key for this object (row).
-     * @return   int
+     * Returns the composite primary key for this object.
+     * The array elements will be in same order as specified in XML.
+     * @return array
      */
     public function getPrimaryKey()
     {
-        return $this->getId();
+        $pks = array();
+        $pks[0] = $this->getId();
+        $pks[1] = $this->getLocale();
+
+        return $pks;
     }
 
     /**
-     * Generic method to set the primary key (id column).
+     * Set the [composite] primary key.
      *
-     * @param       int $key Primary key.
+     * @param      array $keys The elements of the composite key (order must match the order in XML file).
      * @return void
      */
-    public function setPrimaryKey($key)
+    public function setPrimaryKey($keys)
     {
-        $this->setId($key);
+        $this->setId($keys[0]);
+        $this->setLocale($keys[1]);
     }
 
     /**
@@ -1220,7 +1007,7 @@ abstract class Menu implements ActiveRecordInterface
     public function isPrimaryKeyNull()
     {
 
-        return null === $this->getId();
+        return (null === $this->getId()) && (null === $this->getLocale());
     }
 
     /**
@@ -1229,35 +1016,18 @@ abstract class Menu implements ActiveRecordInterface
      * If desired, this method can also make copies of all associated (fkey referrers)
      * objects.
      *
-     * @param      object $copyObj An object of \Menu\Model\Menu (or compatible) type.
+     * @param      object $copyObj An object of \Menu\Model\MenuI18n (or compatible) type.
      * @param      boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
      * @param      boolean $makeNew Whether to reset autoincrement PKs and make the object new.
      * @throws PropelException
      */
     public function copyInto($copyObj, $deepCopy = false, $makeNew = true)
     {
-        $copyObj->setVisible($this->getVisible());
-        $copyObj->setPosition($this->getPosition());
-        $copyObj->setIdentifier($this->getIdentifier());
-        $copyObj->setCreatedAt($this->getCreatedAt());
-        $copyObj->setUpdatedAt($this->getUpdatedAt());
-
-        if ($deepCopy) {
-            // important: temporarily setNew(false) because this affects the behavior of
-            // the getter/setter methods for fkey referrer objects.
-            $copyObj->setNew(false);
-
-            foreach ($this->getMenuI18ns() as $relObj) {
-                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
-                    $copyObj->addMenuI18n($relObj->copy($deepCopy));
-                }
-            }
-
-        } // if ($deepCopy)
-
+        $copyObj->setId($this->getId());
+        $copyObj->setLocale($this->getLocale());
+        $copyObj->setName($this->getName());
         if ($makeNew) {
             $copyObj->setNew(true);
-            $copyObj->setId(NULL); // this is a auto-increment column, so set to default value
         }
     }
 
@@ -1270,7 +1040,7 @@ abstract class Menu implements ActiveRecordInterface
      * objects.
      *
      * @param      boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
-     * @return                 \Menu\Model\Menu Clone of current object.
+     * @return                 \Menu\Model\MenuI18n Clone of current object.
      * @throws PropelException
      */
     public function copy($deepCopy = false)
@@ -1283,245 +1053,55 @@ abstract class Menu implements ActiveRecordInterface
         return $copyObj;
     }
 
-
     /**
-     * Initializes a collection based on the name of a relation.
-     * Avoids crafting an 'init[$relationName]s' method name
-     * that wouldn't work when StandardEnglishPluralizer is used.
+     * Declares an association between this object and a ChildMenu object.
      *
-     * @param      string $relationName The name of the relation to initialize
-     * @return void
-     */
-    public function initRelation($relationName)
-    {
-        if ('MenuI18n' == $relationName) {
-            return $this->initMenuI18ns();
-        }
-    }
-
-    /**
-     * Clears out the collMenuI18ns collection
-     *
-     * This does not modify the database; however, it will remove any associated objects, causing
-     * them to be refetched by subsequent calls to accessor method.
-     *
-     * @return void
-     * @see        addMenuI18ns()
-     */
-    public function clearMenuI18ns()
-    {
-        $this->collMenuI18ns = null; // important to set this to NULL since that means it is uninitialized
-    }
-
-    /**
-     * Reset is the collMenuI18ns collection loaded partially.
-     */
-    public function resetPartialMenuI18ns($v = true)
-    {
-        $this->collMenuI18nsPartial = $v;
-    }
-
-    /**
-     * Initializes the collMenuI18ns collection.
-     *
-     * By default this just sets the collMenuI18ns collection to an empty array (like clearcollMenuI18ns());
-     * however, you may wish to override this method in your stub class to provide setting appropriate
-     * to your application -- for example, setting the initial array to the values stored in database.
-     *
-     * @param      boolean $overrideExisting If set to true, the method call initializes
-     *                                        the collection even if it is not empty
-     *
-     * @return void
-     */
-    public function initMenuI18ns($overrideExisting = true)
-    {
-        if (null !== $this->collMenuI18ns && !$overrideExisting) {
-            return;
-        }
-        $this->collMenuI18ns = new ObjectCollection();
-        $this->collMenuI18ns->setModel('\Menu\Model\MenuI18n');
-    }
-
-    /**
-     * Gets an array of ChildMenuI18n objects which contain a foreign key that references this object.
-     *
-     * If the $criteria is not null, it is used to always fetch the results from the database.
-     * Otherwise the results are fetched from the database the first time, then cached.
-     * Next time the same method is called without $criteria, the cached collection is returned.
-     * If this ChildMenu is new, it will return
-     * an empty collection or the current collection; the criteria is ignored on a new object.
-     *
-     * @param      Criteria $criteria optional Criteria object to narrow the query
-     * @param      ConnectionInterface $con optional connection object
-     * @return Collection|ChildMenuI18n[] List of ChildMenuI18n objects
+     * @param                  ChildMenu $v
+     * @return                 \Menu\Model\MenuI18n The current object (for fluent API support)
      * @throws PropelException
      */
-    public function getMenuI18ns($criteria = null, ConnectionInterface $con = null)
+    public function setMenu(ChildMenu $v = null)
     {
-        $partial = $this->collMenuI18nsPartial && !$this->isNew();
-        if (null === $this->collMenuI18ns || null !== $criteria  || $partial) {
-            if ($this->isNew() && null === $this->collMenuI18ns) {
-                // return empty collection
-                $this->initMenuI18ns();
-            } else {
-                $collMenuI18ns = ChildMenuI18nQuery::create(null, $criteria)
-                    ->filterByMenu($this)
-                    ->find($con);
-
-                if (null !== $criteria) {
-                    if (false !== $this->collMenuI18nsPartial && count($collMenuI18ns)) {
-                        $this->initMenuI18ns(false);
-
-                        foreach ($collMenuI18ns as $obj) {
-                            if (false == $this->collMenuI18ns->contains($obj)) {
-                                $this->collMenuI18ns->append($obj);
-                            }
-                        }
-
-                        $this->collMenuI18nsPartial = true;
-                    }
-
-                    reset($collMenuI18ns);
-
-                    return $collMenuI18ns;
-                }
-
-                if ($partial && $this->collMenuI18ns) {
-                    foreach ($this->collMenuI18ns as $obj) {
-                        if ($obj->isNew()) {
-                            $collMenuI18ns[] = $obj;
-                        }
-                    }
-                }
-
-                $this->collMenuI18ns = $collMenuI18ns;
-                $this->collMenuI18nsPartial = false;
-            }
+        if ($v === null) {
+            $this->setId(NULL);
+        } else {
+            $this->setId($v->getId());
         }
 
-        return $this->collMenuI18ns;
-    }
+        $this->aMenu = $v;
 
-    /**
-     * Sets a collection of MenuI18n objects related by a one-to-many relationship
-     * to the current object.
-     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
-     * and new objects from the given Propel collection.
-     *
-     * @param      Collection $menuI18ns A Propel collection.
-     * @param      ConnectionInterface $con Optional connection object
-     * @return   ChildMenu The current object (for fluent API support)
-     */
-    public function setMenuI18ns(Collection $menuI18ns, ConnectionInterface $con = null)
-    {
-        $menuI18nsToDelete = $this->getMenuI18ns(new Criteria(), $con)->diff($menuI18ns);
-
-
-        //since at least one column in the foreign key is at the same time a PK
-        //we can not just set a PK to NULL in the lines below. We have to store
-        //a backup of all values, so we are able to manipulate these items based on the onDelete value later.
-        $this->menuI18nsScheduledForDeletion = clone $menuI18nsToDelete;
-
-        foreach ($menuI18nsToDelete as $menuI18nRemoved) {
-            $menuI18nRemoved->setMenu(null);
+        // Add binding for other direction of this n:n relationship.
+        // If this object has already been added to the ChildMenu object, it will not be re-added.
+        if ($v !== null) {
+            $v->addMenuI18n($this);
         }
 
-        $this->collMenuI18ns = null;
-        foreach ($menuI18ns as $menuI18n) {
-            $this->addMenuI18n($menuI18n);
-        }
-
-        $this->collMenuI18ns = $menuI18ns;
-        $this->collMenuI18nsPartial = false;
 
         return $this;
     }
 
+
     /**
-     * Returns the number of related MenuI18n objects.
+     * Get the associated ChildMenu object
      *
-     * @param      Criteria $criteria
-     * @param      boolean $distinct
-     * @param      ConnectionInterface $con
-     * @return int             Count of related MenuI18n objects.
+     * @param      ConnectionInterface $con Optional Connection object.
+     * @return                 ChildMenu The associated ChildMenu object.
      * @throws PropelException
      */
-    public function countMenuI18ns(Criteria $criteria = null, $distinct = false, ConnectionInterface $con = null)
+    public function getMenu(ConnectionInterface $con = null)
     {
-        $partial = $this->collMenuI18nsPartial && !$this->isNew();
-        if (null === $this->collMenuI18ns || null !== $criteria || $partial) {
-            if ($this->isNew() && null === $this->collMenuI18ns) {
-                return 0;
-            }
-
-            if ($partial && !$criteria) {
-                return count($this->getMenuI18ns());
-            }
-
-            $query = ChildMenuI18nQuery::create(null, $criteria);
-            if ($distinct) {
-                $query->distinct();
-            }
-
-            return $query
-                ->filterByMenu($this)
-                ->count($con);
+        if ($this->aMenu === null && ($this->id !== null)) {
+            $this->aMenu = ChildMenuQuery::create()->findPk($this->id, $con);
+            /* The following can be used additionally to
+                guarantee the related object contains a reference
+                to this object.  This level of coupling may, however, be
+                undesirable since it could result in an only partially populated collection
+                in the referenced object.
+                $this->aMenu->addMenuI18ns($this);
+             */
         }
 
-        return count($this->collMenuI18ns);
-    }
-
-    /**
-     * Method called to associate a ChildMenuI18n object to this object
-     * through the ChildMenuI18n foreign key attribute.
-     *
-     * @param    ChildMenuI18n $l ChildMenuI18n
-     * @return   \Menu\Model\Menu The current object (for fluent API support)
-     */
-    public function addMenuI18n(ChildMenuI18n $l)
-    {
-        if ($l && $locale = $l->getLocale()) {
-            $this->setLocale($locale);
-            $this->currentTranslations[$locale] = $l;
-        }
-        if ($this->collMenuI18ns === null) {
-            $this->initMenuI18ns();
-            $this->collMenuI18nsPartial = true;
-        }
-
-        if (!in_array($l, $this->collMenuI18ns->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
-            $this->doAddMenuI18n($l);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param MenuI18n $menuI18n The menuI18n object to add.
-     */
-    protected function doAddMenuI18n($menuI18n)
-    {
-        $this->collMenuI18ns[]= $menuI18n;
-        $menuI18n->setMenu($this);
-    }
-
-    /**
-     * @param  MenuI18n $menuI18n The menuI18n object to remove.
-     * @return ChildMenu The current object (for fluent API support)
-     */
-    public function removeMenuI18n($menuI18n)
-    {
-        if ($this->getMenuI18ns()->contains($menuI18n)) {
-            $this->collMenuI18ns->remove($this->collMenuI18ns->search($menuI18n));
-            if (null === $this->menuI18nsScheduledForDeletion) {
-                $this->menuI18nsScheduledForDeletion = clone $this->collMenuI18ns;
-                $this->menuI18nsScheduledForDeletion->clear();
-            }
-            $this->menuI18nsScheduledForDeletion[]= clone $menuI18n;
-            $menuI18n->setMenu(null);
-        }
-
-        return $this;
+        return $this->aMenu;
     }
 
     /**
@@ -1530,13 +1110,11 @@ abstract class Menu implements ActiveRecordInterface
     public function clear()
     {
         $this->id = null;
-        $this->visible = null;
-        $this->position = null;
-        $this->identifier = null;
-        $this->created_at = null;
-        $this->updated_at = null;
+        $this->locale = null;
+        $this->name = null;
         $this->alreadyInSave = false;
         $this->clearAllReferences();
+        $this->applyDefaultValues();
         $this->resetModified();
         $this->setNew(true);
         $this->setDeleted(false);
@@ -1554,18 +1132,9 @@ abstract class Menu implements ActiveRecordInterface
     public function clearAllReferences($deep = false)
     {
         if ($deep) {
-            if ($this->collMenuI18ns) {
-                foreach ($this->collMenuI18ns as $o) {
-                    $o->clearAllReferences($deep);
-                }
-            }
         } // if ($deep)
 
-        // i18n behavior
-        $this->currentLocale = 'en_US';
-        $this->currentTranslations = null;
-
-        $this->collMenuI18ns = null;
+        $this->aMenu = null;
     }
 
     /**
@@ -1575,144 +1144,7 @@ abstract class Menu implements ActiveRecordInterface
      */
     public function __toString()
     {
-        return (string) $this->exportTo(MenuTableMap::DEFAULT_STRING_FORMAT);
-    }
-
-    // timestampable behavior
-
-    /**
-     * Mark the current object so that the update date doesn't get updated during next save
-     *
-     * @return     ChildMenu The current object (for fluent API support)
-     */
-    public function keepUpdateDateUnchanged()
-    {
-        $this->modifiedColumns[MenuTableMap::UPDATED_AT] = true;
-
-        return $this;
-    }
-
-    // i18n behavior
-
-    /**
-     * Sets the locale for translations
-     *
-     * @param     string $locale Locale to use for the translation, e.g. 'fr_FR'
-     *
-     * @return    ChildMenu The current object (for fluent API support)
-     */
-    public function setLocale($locale = 'en_US')
-    {
-        $this->currentLocale = $locale;
-
-        return $this;
-    }
-
-    /**
-     * Gets the locale for translations
-     *
-     * @return    string $locale Locale to use for the translation, e.g. 'fr_FR'
-     */
-    public function getLocale()
-    {
-        return $this->currentLocale;
-    }
-
-    /**
-     * Returns the current translation for a given locale
-     *
-     * @param     string $locale Locale to use for the translation, e.g. 'fr_FR'
-     * @param     ConnectionInterface $con an optional connection object
-     *
-     * @return ChildMenuI18n */
-    public function getTranslation($locale = 'en_US', ConnectionInterface $con = null)
-    {
-        if (!isset($this->currentTranslations[$locale])) {
-            if (null !== $this->collMenuI18ns) {
-                foreach ($this->collMenuI18ns as $translation) {
-                    if ($translation->getLocale() == $locale) {
-                        $this->currentTranslations[$locale] = $translation;
-
-                        return $translation;
-                    }
-                }
-            }
-            if ($this->isNew()) {
-                $translation = new ChildMenuI18n();
-                $translation->setLocale($locale);
-            } else {
-                $translation = ChildMenuI18nQuery::create()
-                    ->filterByPrimaryKey(array($this->getPrimaryKey(), $locale))
-                    ->findOneOrCreate($con);
-                $this->currentTranslations[$locale] = $translation;
-            }
-            $this->addMenuI18n($translation);
-        }
-
-        return $this->currentTranslations[$locale];
-    }
-
-    /**
-     * Remove the translation for a given locale
-     *
-     * @param     string $locale Locale to use for the translation, e.g. 'fr_FR'
-     * @param     ConnectionInterface $con an optional connection object
-     *
-     * @return    ChildMenu The current object (for fluent API support)
-     */
-    public function removeTranslation($locale = 'en_US', ConnectionInterface $con = null)
-    {
-        if (!$this->isNew()) {
-            ChildMenuI18nQuery::create()
-                ->filterByPrimaryKey(array($this->getPrimaryKey(), $locale))
-                ->delete($con);
-        }
-        if (isset($this->currentTranslations[$locale])) {
-            unset($this->currentTranslations[$locale]);
-        }
-        foreach ($this->collMenuI18ns as $key => $translation) {
-            if ($translation->getLocale() == $locale) {
-                unset($this->collMenuI18ns[$key]);
-                break;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Returns the current translation
-     *
-     * @param     ConnectionInterface $con an optional connection object
-     *
-     * @return ChildMenuI18n */
-    public function getCurrentTranslation(ConnectionInterface $con = null)
-    {
-        return $this->getTranslation($this->getLocale(), $con);
-    }
-
-
-        /**
-         * Get the [name] column value.
-         *
-         * @return   string
-         */
-        public function getName()
-        {
-        return $this->getCurrentTranslation()->getName();
-    }
-
-
-        /**
-         * Set the value of [name] column.
-         *
-         * @param      string $v new value
-         * @return   \Menu\Model\MenuI18n The current object (for fluent API support)
-         */
-        public function setName($v)
-        {    $this->getCurrentTranslation()->setName($v);
-
-        return $this;
+        return (string) $this->exportTo(MenuI18nTableMap::DEFAULT_STRING_FORMAT);
     }
 
     /**

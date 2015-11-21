@@ -5,11 +5,15 @@ namespace Menu\Model\Base;
 use \Exception;
 use \PDO;
 use Menu\Model\Menu as ChildMenu;
+use Menu\Model\MenuI18nQuery as ChildMenuI18nQuery;
 use Menu\Model\MenuQuery as ChildMenuQuery;
 use Menu\Model\Map\MenuTableMap;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
+use Propel\Runtime\ActiveQuery\ModelJoin;
+use Propel\Runtime\Collection\Collection;
+use Propel\Runtime\Collection\ObjectCollection;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Exception\PropelException;
 
@@ -21,7 +25,6 @@ use Propel\Runtime\Exception\PropelException;
  * @method     ChildMenuQuery orderById($order = Criteria::ASC) Order by the id column
  * @method     ChildMenuQuery orderByVisible($order = Criteria::ASC) Order by the visible column
  * @method     ChildMenuQuery orderByPosition($order = Criteria::ASC) Order by the position column
- * @method     ChildMenuQuery orderByName($order = Criteria::ASC) Order by the name column
  * @method     ChildMenuQuery orderByIdentifier($order = Criteria::ASC) Order by the identifier column
  * @method     ChildMenuQuery orderByCreatedAt($order = Criteria::ASC) Order by the created_at column
  * @method     ChildMenuQuery orderByUpdatedAt($order = Criteria::ASC) Order by the updated_at column
@@ -29,7 +32,6 @@ use Propel\Runtime\Exception\PropelException;
  * @method     ChildMenuQuery groupById() Group by the id column
  * @method     ChildMenuQuery groupByVisible() Group by the visible column
  * @method     ChildMenuQuery groupByPosition() Group by the position column
- * @method     ChildMenuQuery groupByName() Group by the name column
  * @method     ChildMenuQuery groupByIdentifier() Group by the identifier column
  * @method     ChildMenuQuery groupByCreatedAt() Group by the created_at column
  * @method     ChildMenuQuery groupByUpdatedAt() Group by the updated_at column
@@ -38,13 +40,16 @@ use Propel\Runtime\Exception\PropelException;
  * @method     ChildMenuQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method     ChildMenuQuery innerJoin($relation) Adds a INNER JOIN clause to the query
  *
+ * @method     ChildMenuQuery leftJoinMenuI18n($relationAlias = null) Adds a LEFT JOIN clause to the query using the MenuI18n relation
+ * @method     ChildMenuQuery rightJoinMenuI18n($relationAlias = null) Adds a RIGHT JOIN clause to the query using the MenuI18n relation
+ * @method     ChildMenuQuery innerJoinMenuI18n($relationAlias = null) Adds a INNER JOIN clause to the query using the MenuI18n relation
+ *
  * @method     ChildMenu findOne(ConnectionInterface $con = null) Return the first ChildMenu matching the query
  * @method     ChildMenu findOneOrCreate(ConnectionInterface $con = null) Return the first ChildMenu matching the query, or a new ChildMenu object populated from the query conditions when no match is found
  *
  * @method     ChildMenu findOneById(int $id) Return the first ChildMenu filtered by the id column
  * @method     ChildMenu findOneByVisible(int $visible) Return the first ChildMenu filtered by the visible column
  * @method     ChildMenu findOneByPosition(int $position) Return the first ChildMenu filtered by the position column
- * @method     ChildMenu findOneByName(string $name) Return the first ChildMenu filtered by the name column
  * @method     ChildMenu findOneByIdentifier(string $identifier) Return the first ChildMenu filtered by the identifier column
  * @method     ChildMenu findOneByCreatedAt(string $created_at) Return the first ChildMenu filtered by the created_at column
  * @method     ChildMenu findOneByUpdatedAt(string $updated_at) Return the first ChildMenu filtered by the updated_at column
@@ -52,7 +57,6 @@ use Propel\Runtime\Exception\PropelException;
  * @method     array findById(int $id) Return ChildMenu objects filtered by the id column
  * @method     array findByVisible(int $visible) Return ChildMenu objects filtered by the visible column
  * @method     array findByPosition(int $position) Return ChildMenu objects filtered by the position column
- * @method     array findByName(string $name) Return ChildMenu objects filtered by the name column
  * @method     array findByIdentifier(string $identifier) Return ChildMenu objects filtered by the identifier column
  * @method     array findByCreatedAt(string $created_at) Return ChildMenu objects filtered by the created_at column
  * @method     array findByUpdatedAt(string $updated_at) Return ChildMenu objects filtered by the updated_at column
@@ -144,7 +148,7 @@ abstract class MenuQuery extends ModelCriteria
      */
     protected function findPkSimple($key, $con)
     {
-        $sql = 'SELECT ID, VISIBLE, POSITION, NAME, IDENTIFIER, CREATED_AT, UPDATED_AT FROM menu WHERE ID = :p0';
+        $sql = 'SELECT ID, VISIBLE, POSITION, IDENTIFIER, CREATED_AT, UPDATED_AT FROM menu WHERE ID = :p0';
         try {
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
@@ -357,35 +361,6 @@ abstract class MenuQuery extends ModelCriteria
     }
 
     /**
-     * Filter the query on the name column
-     *
-     * Example usage:
-     * <code>
-     * $query->filterByName('fooValue');   // WHERE name = 'fooValue'
-     * $query->filterByName('%fooValue%'); // WHERE name LIKE '%fooValue%'
-     * </code>
-     *
-     * @param     string $name The value to use as filter.
-     *              Accepts wildcards (* and % trigger a LIKE)
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-     *
-     * @return ChildMenuQuery The current query, for fluid interface
-     */
-    public function filterByName($name = null, $comparison = null)
-    {
-        if (null === $comparison) {
-            if (is_array($name)) {
-                $comparison = Criteria::IN;
-            } elseif (preg_match('/[\%\*]/', $name)) {
-                $name = str_replace('*', '%', $name);
-                $comparison = Criteria::LIKE;
-            }
-        }
-
-        return $this->addUsingAlias(MenuTableMap::NAME, $name, $comparison);
-    }
-
-    /**
      * Filter the query on the identifier column
      *
      * Example usage:
@@ -498,6 +473,79 @@ abstract class MenuQuery extends ModelCriteria
         }
 
         return $this->addUsingAlias(MenuTableMap::UPDATED_AT, $updatedAt, $comparison);
+    }
+
+    /**
+     * Filter the query by a related \Menu\Model\MenuI18n object
+     *
+     * @param \Menu\Model\MenuI18n|ObjectCollection $menuI18n  the related object to use as filter
+     * @param string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return ChildMenuQuery The current query, for fluid interface
+     */
+    public function filterByMenuI18n($menuI18n, $comparison = null)
+    {
+        if ($menuI18n instanceof \Menu\Model\MenuI18n) {
+            return $this
+                ->addUsingAlias(MenuTableMap::ID, $menuI18n->getId(), $comparison);
+        } elseif ($menuI18n instanceof ObjectCollection) {
+            return $this
+                ->useMenuI18nQuery()
+                ->filterByPrimaryKeys($menuI18n->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByMenuI18n() only accepts arguments of type \Menu\Model\MenuI18n or Collection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the MenuI18n relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return ChildMenuQuery The current query, for fluid interface
+     */
+    public function joinMenuI18n($relationAlias = null, $joinType = 'LEFT JOIN')
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('MenuI18n');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'MenuI18n');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the MenuI18n relation MenuI18n object
+     *
+     * @see useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \Menu\Model\MenuI18nQuery A secondary query class using the current class as primary query
+     */
+    public function useMenuI18nQuery($relationAlias = null, $joinType = 'LEFT JOIN')
+    {
+        return $this
+            ->joinMenuI18n($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'MenuI18n', '\Menu\Model\MenuI18nQuery');
     }
 
     /**
@@ -655,6 +703,63 @@ abstract class MenuQuery extends ModelCriteria
     public function firstCreatedFirst()
     {
         return $this->addAscendingOrderByColumn(MenuTableMap::CREATED_AT);
+    }
+
+    // i18n behavior
+
+    /**
+     * Adds a JOIN clause to the query using the i18n relation
+     *
+     * @param     string $locale Locale to use for the join condition, e.g. 'fr_FR'
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'. Defaults to left join.
+     *
+     * @return    ChildMenuQuery The current query, for fluid interface
+     */
+    public function joinI18n($locale = 'en_US', $relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $relationName = $relationAlias ? $relationAlias : 'MenuI18n';
+
+        return $this
+            ->joinMenuI18n($relationAlias, $joinType)
+            ->addJoinCondition($relationName, $relationName . '.Locale = ?', $locale);
+    }
+
+    /**
+     * Adds a JOIN clause to the query and hydrates the related I18n object.
+     * Shortcut for $c->joinI18n($locale)->with()
+     *
+     * @param     string $locale Locale to use for the join condition, e.g. 'fr_FR'
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'. Defaults to left join.
+     *
+     * @return    ChildMenuQuery The current query, for fluid interface
+     */
+    public function joinWithI18n($locale = 'en_US', $joinType = Criteria::LEFT_JOIN)
+    {
+        $this
+            ->joinI18n($locale, null, $joinType)
+            ->with('MenuI18n');
+        $this->with['MenuI18n']->setIsWithOneToMany(false);
+
+        return $this;
+    }
+
+    /**
+     * Use the I18n relation query object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $locale Locale to use for the join condition, e.g. 'fr_FR'
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'. Defaults to left join.
+     *
+     * @return    ChildMenuI18nQuery A secondary query class using the current class as primary query
+     */
+    public function useI18nQuery($locale = 'en_US', $relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinI18n($locale, $relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'MenuI18n', '\Menu\Model\MenuI18nQuery');
     }
 
 } // MenuQuery
