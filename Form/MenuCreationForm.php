@@ -23,9 +23,59 @@
 namespace Menu\Form;
 
 use Thelia\Form\BaseForm;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\ExecutionContextInterface;
+use Thelia\Core\Translation\Translator;
 
 class MenuCreationForm extends BaseForm
 {    
+    protected function buildForm()
+    {
+        $this->formBuilder
+            ->add('name', 'text', array(
+                    'constraints' => array(
+                        new NotBlank()
+                    ),
+                    'label' => Translator::getInstance()->trans('Name'),
+                    'label_attr' => array(
+                        'for' => 'menu_name'
+                    )
+                ))
+            ->add('identifier', 'text', array(
+                    'constraints' => array(
+                        new NotBlank(),
+                        new Callback(array(
+                            "methods" => array(
+                                array($this, "verifyExisting")
+                            )
+                        ))
+                    ),
+                    'label' => Translator::getInstance()->trans('Unique identifier', array(), 'menu'),
+                    'label_attr' => array(
+                        'for' => 'menu_identifier'
+                    )
+                ))            
+            ->add('visible', 'integer', array(
+                    'label' => Translator::getInstance()->trans('Visible ?'),
+                    'label_attr' => array(
+                        'for' => 'menu_visible'
+                    )
+                ))
+            ->add("locale", "text", array(
+                    "constraints" => array(
+                        new NotBlank()
+                    )
+                ))
+
+        ;
+    }
+    
+    public function verifyExisting($value, ExecutionContextInterface $context)
+    {
+        
+    }
+    
     public function getName()
     {
         return 'admin_menu_creation';
