@@ -1,0 +1,56 @@
+{extends file="admin-layout.tpl"}
+
+{block name="check-resource"}admin.menu{/block}
+{block name="check-access"}view{/block}
+
+{block name="page-title"}{intl l='View menu' d='menu'}{/block}
+
+{block name="main-content"}
+<div class="menu view-menu">
+    <div id="wrapper" class="container">
+
+        {loop name="menu" type="menu" visible="*" id="$menu_id"}
+        <ul class="breadcrumb">
+            <li><a href="{url path='admin/home'}">{intl l="Home"}</a></li>
+            <li><a href="{url path='admin/module/Menu'}">{intl l="Menus" d='menu'}</a></li>
+            <li class="active">{$TITLE}</li>
+        </ul>
+
+        <div class="row">
+
+            <div class="col-md-12 general-block-decorator">
+                <div class="row">
+                    <div class="col-md-7 title">
+                        {intl l='View menu "%title"' title=$TITLE d='menu'}
+                    </div>
+
+                    <div class="col-md-5 actions">
+
+                        {if $HAS_PREVIOUS != 0}
+                        <a href="{url path="/admin/module/Menu/view?menu_id=$PREVIOUS"}" class="btn btn-default" title="{intl l='View previous menu' d='menu'}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+                        {else}
+                        <a href="#" disabled="disabled" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span></a>
+                        {/if}
+
+                        {if $HAS_NEXT != 0}
+                        <a href="{url path="/admin/module/Menu/view?menu_id=$NEXT"}" class="btn btn-default" title="{intl l='View next menu' d='menu'}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+                        {else}
+                        <a href="#" disabled="disabled" class="btn btn-default"><span class="glyphicon glyphicon-arrow-right"></span></a>
+                        {/if}
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    
+
+                </div>
+
+            </div>
+
+        </div>
+        {/loop}
+
+    </div>
+</div>
+{/block}
