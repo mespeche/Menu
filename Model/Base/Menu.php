@@ -1693,24 +1693,24 @@ abstract class Menu implements ActiveRecordInterface
 
 
         /**
-         * Get the [name] column value.
+         * Get the [title] column value.
          *
          * @return   string
          */
-        public function getName()
+        public function getTitle()
         {
-        return $this->getCurrentTranslation()->getName();
+        return $this->getCurrentTranslation()->getTitle();
     }
 
 
         /**
-         * Set the value of [name] column.
+         * Set the value of [title] column.
          *
          * @param      string $v new value
          * @return   \Menu\Model\MenuI18n The current object (for fluent API support)
          */
-        public function setName($v)
-        {    $this->getCurrentTranslation()->setName($v);
+        public function setTitle($v)
+        {    $this->getCurrentTranslation()->setTitle($v);
 
         return $this;
     }

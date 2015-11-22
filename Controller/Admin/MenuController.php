@@ -118,7 +118,7 @@ class MenuController extends AbstractCrudController
         $data = array(
             'id'           => $object->getId(),
             'locale'       => $object->getLocale(),
-            'name'        => $object->getName(),
+            'title'        => $object->getTitle(),
             'identifier'         => $object->getIdentifier(),            
             'visible'      => $object->getVisible()
         );
@@ -135,7 +135,7 @@ class MenuController extends AbstractCrudController
     protected function getCreationEvent($formData)
     {
         $menuCreateEvent = new MenuEvents(
-            $formData['name'],
+            $formData['title'],
             $formData['identifier'],
             $formData['visible'],
             $formData['locale']
@@ -156,7 +156,7 @@ class MenuController extends AbstractCrudController
 
         $menuUpdateEvent
             ->setLocale($formData['locale'])
-            ->setName($formData['name'])
+            ->setTitle($formData['title'])
             ->setCode($formData['identifier'])
             ->setVisible($formData['visible']);
 

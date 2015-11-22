@@ -31,7 +31,7 @@ CREATE TABLE `menu_i18n`
 (
     `id` INTEGER NOT NULL,
     `locale` VARCHAR(5) DEFAULT 'en_US' NOT NULL,
-    `name` VARCHAR(255),
+    `title` VARCHAR(255),
     PRIMARY KEY (`id`,`locale`),
     CONSTRAINT `menu_i18n_FK_1`
         FOREIGN KEY (`id`)

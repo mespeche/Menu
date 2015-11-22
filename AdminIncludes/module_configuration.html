@@ -15,7 +15,94 @@
                         {/loop}
                     </caption>
                     
-                    <!-- [LOOP] Menu list here -->
+                    {ifloop rel="menu_list"}
+                    <thead>
+                    <tr>
+                        <th>{intl l='ID'}</th>
+                        <th>{intl l='Title'}</th>
+                        <th>{intl l='Unique identifier' d='menu'}</th>
+                        <th>{intl l='Visible'}</th>
+                        <th>{intl l='Position'}</th>
+                        <th class="actions">{intl l='Actions'}</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {loop name="menu_list" type="menu" visible="*" order="manual" backend_context="1" lang=$lang_id}
+                    <tr>
+                        <td>{$ID}</td>
+
+                        <td class="object-title">
+                            <a title="{intl l='Browse this menu' d='menu'}" href="{url path='/admin/module/Menu/view' menu_id=$ID}">
+                                {$TITLE}
+                            </a>
+                        </td>
+
+                        <td>
+                            {$IDENTIFIER}
+                        </td>
+
+                        <td>
+                            {loop type="auth" name="can_change" role="ADMIN" resource="admin.menu" access="UPDATE"}
+                            <div class="make-switch switch-small menuVisibleToggle" data-id="{$ID}"  data-on="success" data-off="danger" data-on-label="<i class='glyphicon glyphicon-ok'></i>" data-off-label="<i class='glyphicon glyphicon-remove'></i>">
+                                <input type="checkbox" class="menuVisibleToggle" {if $VISIBLE == 1}checked="checked"{/if}>
+                            </div>
+                            {/loop}
+
+                            {elseloop rel="can_change"}
+                            <div class="make-switch switch-small" data-on="success" data-off="danger" data-on-label="<i class='glyphicon glyphicon-ok'></i>" data-off-label="<i class='glyphicon glyphicon-remove'></i>">
+                                <input type="checkbox" class="disabled" disabled="disabled" {if $VISIBLE == 1}checked="checked"{/if}>
+                            </div>
+                            {/elseloop}
+                        </td>
+
+                        <td>
+                            {admin_position_block
+                            resource="admin.menu"
+                            access="update"
+                            path={url path='admin/module/Menu/update-position' menu_id=$ID}
+                            url_parameter="menu_id"
+                            in_place_edit_class="menuPositionChange"
+                            position=$POSITION
+                            id=$ID
+                            }
+                        </td>
+
+                        <td class="actions">
+                            <div class="btn-group">
+                                <a class="btn btn-default btn-xs" title="{intl l='Browse this menu' d='menu'}" href="{url path='/admin/module/Menu/view' menu_id=$ID}"><i class="glyphicon glyphicon-folder-open"></i></a>
+
+                                {loop type="auth" name="can_change" role="ADMIN" resource="admin.menu" access="UPDATE"}
+                                <a class="btn btn-default btn-xs" title="{intl l='Edit this menu' d='menu'}" href="{url path='/admin/module/Menu/update' menu_id=$ID}"><i class="glyphicon glyphicon-edit"></i></a>
+                                {/loop}
+
+                                {loop type="auth" name="can_delete" role="ADMIN" resource="admin.menu" access="DELETE"}
+                                <a class="btn btn-default btn-xs menu-delete" title="{intl l='Delete this menu' d='menu'}"  href="#menu_delete_dialog" data-id="{$ID}" data-toggle="modal"><i class="glyphicon glyphicon-trash"></i></a>
+                                {/loop}
+                            </div>
+                        </td>
+                    </tr>
+                    {/loop}
+                    </tbody>
+                    {/ifloop}
+
+                    {elseloop rel="menu_list"}
+                    <thead>
+                    <tr>
+                        <td class="message">
+                            <div class="alert alert-info">
+                                {loop type="auth" name="can_create" role="ADMIN" resource="admin.menu" access="CREATE"}
+                                {intl l="There is no menu. To create a new one, click the + button above." d="menu"}
+                                {/loop}
+
+                                {elseloop rel="can_create"}
+                                {intl l="There is no menu." d="menu"}
+                                {/elseloop}
+                            </div>
+                        </td>
+                    </tr>
+                    </thead>
+                    {/elseloop}
 
                 </table>
             </div>
@@ -38,12 +125,12 @@
         <input type="hidden" name="{$name}" value="{url path='/admin/module/Menu'}" />
         {/form_field}
 
-        {form_field form=$form field='name'}
+        {form_field form=$form field='title'}
         <div class="form-group {if $error}has-error{/if}">
             <label for="{$label_attr.for}" class="control-label">{$label} : </label>
             {loop type="lang" name="default-lang" default_only="1"}
             <div class="input-group">
-                <input type="text" id="{$label_attr.for}" required="required" name="{$name}" class="form-control" value="{$value}" title="{$label}" placeholder="{intl l='Name'}">
+                <input type="text" id="{$label_attr.for}" required="required" name="{$name}" class="form-control" value="{$value}" title="{$label}" placeholder="{intl l='Title'}">
                 <span class="input-group-addon"><img src="{image file="assets/img/flags/{$CODE}.png"}" alt="$TITLE" /></span>
             </div>
 

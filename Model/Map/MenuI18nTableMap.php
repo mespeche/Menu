@@ -81,9 +81,9 @@ class MenuI18nTableMap extends TableMap
     const LOCALE = 'menu_i18n.LOCALE';
 
     /**
-     * the column name for the NAME field
+     * the column name for the TITLE field
      */
-    const NAME = 'menu_i18n.NAME';
+    const TITLE = 'menu_i18n.TITLE';
 
     /**
      * The default string format for model objects of the related table
@@ -97,11 +97,11 @@ class MenuI18nTableMap extends TableMap
      * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        self::TYPE_PHPNAME       => array('Id', 'Locale', 'Name', ),
-        self::TYPE_STUDLYPHPNAME => array('id', 'locale', 'name', ),
-        self::TYPE_COLNAME       => array(MenuI18nTableMap::ID, MenuI18nTableMap::LOCALE, MenuI18nTableMap::NAME, ),
-        self::TYPE_RAW_COLNAME   => array('ID', 'LOCALE', 'NAME', ),
-        self::TYPE_FIELDNAME     => array('id', 'locale', 'name', ),
+        self::TYPE_PHPNAME       => array('Id', 'Locale', 'Title', ),
+        self::TYPE_STUDLYPHPNAME => array('id', 'locale', 'title', ),
+        self::TYPE_COLNAME       => array(MenuI18nTableMap::ID, MenuI18nTableMap::LOCALE, MenuI18nTableMap::TITLE, ),
+        self::TYPE_RAW_COLNAME   => array('ID', 'LOCALE', 'TITLE', ),
+        self::TYPE_FIELDNAME     => array('id', 'locale', 'title', ),
         self::TYPE_NUM           => array(0, 1, 2, )
     );
 
@@ -112,11 +112,11 @@ class MenuI18nTableMap extends TableMap
      * e.g. self::$fieldKeys[self::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        self::TYPE_PHPNAME       => array('Id' => 0, 'Locale' => 1, 'Name' => 2, ),
-        self::TYPE_STUDLYPHPNAME => array('id' => 0, 'locale' => 1, 'name' => 2, ),
-        self::TYPE_COLNAME       => array(MenuI18nTableMap::ID => 0, MenuI18nTableMap::LOCALE => 1, MenuI18nTableMap::NAME => 2, ),
-        self::TYPE_RAW_COLNAME   => array('ID' => 0, 'LOCALE' => 1, 'NAME' => 2, ),
-        self::TYPE_FIELDNAME     => array('id' => 0, 'locale' => 1, 'name' => 2, ),
+        self::TYPE_PHPNAME       => array('Id' => 0, 'Locale' => 1, 'Title' => 2, ),
+        self::TYPE_STUDLYPHPNAME => array('id' => 0, 'locale' => 1, 'title' => 2, ),
+        self::TYPE_COLNAME       => array(MenuI18nTableMap::ID => 0, MenuI18nTableMap::LOCALE => 1, MenuI18nTableMap::TITLE => 2, ),
+        self::TYPE_RAW_COLNAME   => array('ID' => 0, 'LOCALE' => 1, 'TITLE' => 2, ),
+        self::TYPE_FIELDNAME     => array('id' => 0, 'locale' => 1, 'title' => 2, ),
         self::TYPE_NUM           => array(0, 1, 2, )
     );
 
@@ -138,7 +138,7 @@ class MenuI18nTableMap extends TableMap
         // columns
         $this->addForeignPrimaryKey('ID', 'Id', 'INTEGER' , 'menu', 'ID', true, null, null);
         $this->addPrimaryKey('LOCALE', 'Locale', 'VARCHAR', true, 5, 'en_US');
-        $this->addColumn('NAME', 'Name', 'VARCHAR', false, 255, null);
+        $this->addColumn('TITLE', 'Title', 'VARCHAR', false, 255, null);
     } // initialize()
 
     /**
@@ -338,11 +338,11 @@ class MenuI18nTableMap extends TableMap
         if (null === $alias) {
             $criteria->addSelectColumn(MenuI18nTableMap::ID);
             $criteria->addSelectColumn(MenuI18nTableMap::LOCALE);
-            $criteria->addSelectColumn(MenuI18nTableMap::NAME);
+            $criteria->addSelectColumn(MenuI18nTableMap::TITLE);
         } else {
             $criteria->addSelectColumn($alias . '.ID');
             $criteria->addSelectColumn($alias . '.LOCALE');
-            $criteria->addSelectColumn($alias . '.NAME');
+            $criteria->addSelectColumn($alias . '.TITLE');
         }
     }
 

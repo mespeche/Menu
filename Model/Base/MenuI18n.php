@@ -67,10 +67,10 @@ abstract class MenuI18n implements ActiveRecordInterface
     protected $locale;
 
     /**
-     * The value for the name field.
+     * The value for the title field.
      * @var        string
      */
-    protected $name;
+    protected $title;
 
     /**
      * @var        Menu
@@ -379,14 +379,14 @@ abstract class MenuI18n implements ActiveRecordInterface
     }
 
     /**
-     * Get the [name] column value.
+     * Get the [title] column value.
      *
      * @return   string
      */
-    public function getName()
+    public function getTitle()
     {
 
-        return $this->name;
+        return $this->title;
     }
 
     /**
@@ -436,25 +436,25 @@ abstract class MenuI18n implements ActiveRecordInterface
     } // setLocale()
 
     /**
-     * Set the value of [name] column.
+     * Set the value of [title] column.
      *
      * @param      string $v new value
      * @return   \Menu\Model\MenuI18n The current object (for fluent API support)
      */
-    public function setName($v)
+    public function setTitle($v)
     {
         if ($v !== null) {
             $v = (string) $v;
         }
 
-        if ($this->name !== $v) {
-            $this->name = $v;
-            $this->modifiedColumns[MenuI18nTableMap::NAME] = true;
+        if ($this->title !== $v) {
+            $this->title = $v;
+            $this->modifiedColumns[MenuI18nTableMap::TITLE] = true;
         }
 
 
         return $this;
-    } // setName()
+    } // setTitle()
 
     /**
      * Indicates whether the columns in this object are only set to default values.
@@ -503,8 +503,8 @@ abstract class MenuI18n implements ActiveRecordInterface
             $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : MenuI18nTableMap::translateFieldName('Locale', TableMap::TYPE_PHPNAME, $indexType)];
             $this->locale = (null !== $col) ? (string) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : MenuI18nTableMap::translateFieldName('Name', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->name = (null !== $col) ? (string) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : MenuI18nTableMap::translateFieldName('Title', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->title = (null !== $col) ? (string) $col : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -740,8 +740,8 @@ abstract class MenuI18n implements ActiveRecordInterface
         if ($this->isColumnModified(MenuI18nTableMap::LOCALE)) {
             $modifiedColumns[':p' . $index++]  = 'LOCALE';
         }
-        if ($this->isColumnModified(MenuI18nTableMap::NAME)) {
-            $modifiedColumns[':p' . $index++]  = 'NAME';
+        if ($this->isColumnModified(MenuI18nTableMap::TITLE)) {
+            $modifiedColumns[':p' . $index++]  = 'TITLE';
         }
 
         $sql = sprintf(
@@ -760,8 +760,8 @@ abstract class MenuI18n implements ActiveRecordInterface
                     case 'LOCALE':
                         $stmt->bindValue($identifier, $this->locale, PDO::PARAM_STR);
                         break;
-                    case 'NAME':
-                        $stmt->bindValue($identifier, $this->name, PDO::PARAM_STR);
+                    case 'TITLE':
+                        $stmt->bindValue($identifier, $this->title, PDO::PARAM_STR);
                         break;
                 }
             }
@@ -825,7 +825,7 @@ abstract class MenuI18n implements ActiveRecordInterface
                 return $this->getLocale();
                 break;
             case 2:
-                return $this->getName();
+                return $this->getTitle();
                 break;
             default:
                 return null;
@@ -858,7 +858,7 @@ abstract class MenuI18n implements ActiveRecordInterface
         $result = array(
             $keys[0] => $this->getId(),
             $keys[1] => $this->getLocale(),
-            $keys[2] => $this->getName(),
+            $keys[2] => $this->getTitle(),
         );
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
@@ -910,7 +910,7 @@ abstract class MenuI18n implements ActiveRecordInterface
                 $this->setLocale($value);
                 break;
             case 2:
-                $this->setName($value);
+                $this->setTitle($value);
                 break;
         } // switch()
     }
@@ -938,7 +938,7 @@ abstract class MenuI18n implements ActiveRecordInterface
 
         if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
         if (array_key_exists($keys[1], $arr)) $this->setLocale($arr[$keys[1]]);
-        if (array_key_exists($keys[2], $arr)) $this->setName($arr[$keys[2]]);
+        if (array_key_exists($keys[2], $arr)) $this->setTitle($arr[$keys[2]]);
     }
 
     /**
@@ -952,7 +952,7 @@ abstract class MenuI18n implements ActiveRecordInterface
 
         if ($this->isColumnModified(MenuI18nTableMap::ID)) $criteria->add(MenuI18nTableMap::ID, $this->id);
         if ($this->isColumnModified(MenuI18nTableMap::LOCALE)) $criteria->add(MenuI18nTableMap::LOCALE, $this->locale);
-        if ($this->isColumnModified(MenuI18nTableMap::NAME)) $criteria->add(MenuI18nTableMap::NAME, $this->name);
+        if ($this->isColumnModified(MenuI18nTableMap::TITLE)) $criteria->add(MenuI18nTableMap::TITLE, $this->title);
 
         return $criteria;
     }
@@ -1025,7 +1025,7 @@ abstract class MenuI18n implements ActiveRecordInterface
     {
         $copyObj->setId($this->getId());
         $copyObj->setLocale($this->getLocale());
-        $copyObj->setName($this->getName());
+        $copyObj->setTitle($this->getTitle());
         if ($makeNew) {
             $copyObj->setNew(true);
         }
@@ -1111,7 +1111,7 @@ abstract class MenuI18n implements ActiveRecordInterface
     {
         $this->id = null;
         $this->locale = null;
-        $this->name = null;
+        $this->title = null;
         $this->alreadyInSave = false;
         $this->clearAllReferences();
         $this->applyDefaultValues();

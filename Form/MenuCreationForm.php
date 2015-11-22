@@ -34,13 +34,13 @@ class MenuCreationForm extends BaseForm
     protected function buildForm()
     {
         $this->formBuilder
-            ->add('name', 'text', array(
+            ->add('title', 'text', array(
                     'constraints' => array(
                         new NotBlank()
                     ),
-                    'label' => Translator::getInstance()->trans('Name'),
+                    'label' => Translator::getInstance()->trans('Title'),
                     'label_attr' => array(
-                        'for' => 'menu_name'
+                        'for' => 'menu_title'
                     )
                 ))
             ->add('identifier', 'text', array(

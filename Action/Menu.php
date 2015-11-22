@@ -48,7 +48,7 @@ class Menu implements EventSubscriberInterface
         $menu = new \Menu\Model\Menu();
 
         $menu->setLocale($event->getLocale())
-            ->setName($event->getName())
+            ->setTitle($event->getTitle())
             ->setIdentifier($event->getIdentifier())
             ->setVisible($event->getVisible())
             ->create();
@@ -68,7 +68,7 @@ class Menu implements EventSubscriberInterface
             $menu
                 ->setVisible($event->getVisible())
                 ->setLocale($event->getLocale())
-                ->setName($event->getName())
+                ->setTitle($event->getTitle())
                 ->setIdentifier($event->getIdentifier())
                 ->save()
             ;

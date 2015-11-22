@@ -27,5 +27,9 @@
     <route id="admin.menu.toggle-online" path="/admin/module/Menu/toggle-online">
         <default key="_controller">Menu\Controller\Admin\MenuController::setToggleVisibilityAction</default>
     </route>
+    
+    <route id="admin.menu.update-position" path="/admin/module/Menu/update-position">
+        <default key="_controller">Menu\Controller\Admin\MenuController::updatePositionAction</default>
+    </route>
 
 </routes>

@@ -7,14 +7,14 @@
         <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER" />        
         <column name="visible" type="TINYINT" />
         <column name="position" type="INTEGER" />
-        <column name="name" size="255" type="VARCHAR" />
+        <column name="title" size="255" type="VARCHAR" />
         <column name="identifier" size="255" type="VARCHAR" />
         <index name="idx_menu_id">
             <index-column name="id" />
         </index>
         <behavior name="timestampable" />  
         <behavior name="i18n">
-            <parameter name="i18n_columns" value="name" />
+            <parameter name="i18n_columns" value="title" />
         </behavior>      
     </table>
     

@@ -43,14 +43,14 @@ class MenuEvents extends ActionEvent
     const MENU_UPDATE_POSITION   = 'menu.action.updatePosition';
 
     protected $locale;
-    protected $name;
+    protected $title;
     protected $identifier;
     protected $visible;
     protected $menu;
 
-    public function __construct($name, $identifier, $visible, $locale)
+    public function __construct($title, $identifier, $visible, $locale)
     {        
-        $this->name = $name;
+        $this->title = $title;
         $this->identifier = $identifier;
         $this->visible = $visible;
         $this->locale = $locale;
@@ -69,13 +69,13 @@ class MenuEvents extends ActionEvent
     }
 
     /**
-     * @param mixed $name
+     * @param mixed $title
      *
      * @return $this
      */
-    public function setName($name)
+    public function setTitle($title)
     {
-        $this->name = $name;
+        $this->title = $title;
 
         return $this;
     }
@@ -83,9 +83,9 @@ class MenuEvents extends ActionEvent
     /**
      * @return mixed
      */
-    public function getName()
-    {
-        return $this->name;
+    public function getTitle()
+    {        
+        return $this->title;
     }
 
     /**
