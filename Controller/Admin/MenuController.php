@@ -157,7 +157,7 @@ class MenuController extends AbstractCrudController
         $menuUpdateEvent
             ->setLocale($formData['locale'])
             ->setTitle($formData['title'])
-            ->setCode($formData['identifier'])
+            ->setIdentifier($formData['identifier'])
             ->setVisible($formData['visible']);
 
         return $menuUpdateEvent;

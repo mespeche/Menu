@@ -26,6 +26,7 @@ namespace Menu\Form;
 use Menu\Model\MenuQuery;
 use Symfony\Component\Validator\Constraints\GreaterThan;
 use Symfony\Component\Validator\ExecutionContextInterface;
+use Thelia\Form\StandardDescriptionFieldsTrait;
 
 /**
  * Class MenuModificationForm
@@ -34,7 +35,8 @@ use Symfony\Component\Validator\ExecutionContextInterface;
  */
 class MenuModificationForm extends MenuCreationForm
 {    
-
+    use StandardDescriptionFieldsTrait;
+    
     protected function buildForm()
     {
         parent::buildForm();
@@ -43,8 +45,8 @@ class MenuModificationForm extends MenuCreationForm
             ->add("id", "hidden", array("constraints" => array(new GreaterThan(array('value' => 0)))))
         ;
 
-        // Add standard description fields, excluding title and locale, which a re defined in parent class
-        $this->addStandardDescFields(array('locale'));
+        // Add standard description fields, excluding title and locale, which a re defined in parent class        
+        $this->addStandardDescFields(array('title', 'locale'));
     }
 
     public function verifyExisting($value, ExecutionContextInterface $context)

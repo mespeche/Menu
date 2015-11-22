@@ -10,6 +10,7 @@
 
     <forms>
         <form name="menu.admin.creation" class="Menu\Form\MenuCreationForm"/>
+        <form name="menu.admin.modification" class="Menu\Form\MenuModificationForm"/>
     </forms>
 
     <commands>

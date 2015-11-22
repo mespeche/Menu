@@ -1,0 +1,130 @@
+{extends file="admin-layout.tpl"}
+
+{block name="check-resource"}admin.menu{/block}
+{block name="check-access"}update{/block}
+
+{block name="page-title"}{intl l='Edit menu' d='menu'}{/block}
+
+{block name="main-content"}
+<div class="menu edit-menu">
+    <div id="wrapper" class="container">
+
+        <ul class="breadcrumb">
+            <li><a href="{url path='admin/home'}">{intl l="Home"}</a></li>
+            <li><a href="{url path='admin/module/Menu'}">{intl l="Menus" d='menu'}</a></li>
+        </ul>
+
+        <div class="row">
+            {loop name="menu_edit" type="menu" visible="*" id="{$menu_id}" backend_context="1" lang="$edit_language_id"}
+            <div class="col-md-12 general-block-decorator">
+                <div class="row">
+                    <div class="col-md-7 title">
+                    {intl l='Edit menu %title' d='menu' title=$TITLE}
+                    </div>
+
+                    <div class="col-md-5 actions">
+
+                        {if $HAS_PREVIOUS != 0}
+                        <a href="{url path="/admin/module/Menu/update?menu_id=$PREVIOUS"}" class="btn btn-default" title="{intl l='Edit previous menu' d='menu'}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+                        {else}
+                        <a href="#" disabled="disabled" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span></a>
+                        {/if}
+
+                        {if $HAS_NEXT != 0}
+                        <a href="{url path="/admin/module/Menu/update?menu_id=$NEXT"}" class="btn btn-default" title="{intl l='Edit next menu' d='menu'}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+                        {else}
+                        <a href="#" disabled="disabled" class="btn btn-default"><span class="glyphicon glyphicon-arrow-right"></span></a>
+                        {/if}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+
+                        <ul class="nav nav-tabs" id="tabbed-menu">
+                            <li class="active"><a href="#general" data-toggle="tab">{intl l="General description"}</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+
+                            <div class="tab-pane fade active in" id="general">
+
+                                <div class="form-container">
+
+                                    {form name="menu.admin.modification"}
+                                    <form method="POST" action="{url path='/admin/module/Menu/save'}" {form_enctype form=$form} class="clearfix">
+
+                                    {include file="includes/inner-form-toolbar.html" close_url="{url path='/admin/module/Menu' menu_id=$menu_id}"}
+
+                                    {* Be sure to get the menu ID, even if the form could not be validated *}
+                                    <input type="hidden" name="menu_id" value="{$menu_id}" />
+
+                                    {form_hidden_fields form=$form}
+
+                                    {form_field form=$form field='success_url'}
+                                    <input type="hidden" name="{$name}" value="{url path="/admin/module/Menu/update{$ID}"}" />
+                                    {/form_field}
+
+                                    {form_field form=$form field='locale'}
+                                    <input type="hidden" name="{$name}" value="{$edit_language_locale}" />
+                                    {/form_field}
+
+                                    {if $form_error}<div class="alert alert-danger">{$form_error_message}</div>{/if}
+
+                                    {form_field form=$form field='title'}
+                                    <div class="form-group {if $error}has-error{/if}">
+                                        <label for="{$label_attr.for}" class="control-label">{$label} : </label>
+                                        <input type="text" id="{$label_attr.for}" name="{$name}" class="form-control" value="{$value}" title="{$label}" placeholder="{intl l='Title'}">                                        
+                                    </div>
+                                    {/form_field}
+
+                                    {form_field form=$form field='identifier'}
+                                    <div class="form-group {if $error}has-error{/if}">
+                                        <label for="{$label_attr.for}" class="control-label">{$label} : </label>
+                                        <input type="text" id="{$label_attr.for}" name="{$name}" class="form-control" value="{$value}" title="{$label}" placeholder="{intl l='Unique identifier'}">
+                                        <div class="help-block">{intl l='Enter here the unique identifier of the menu which must be use into your loops' d='menu'}</div>
+                                    </div>
+                                    {/form_field}
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {form_field form=$form field='visible'}
+                                            <div class="form-group {if $error}has-error{/if}">
+                                                <label for="{$label_attr.for}" class="control-label">{intl l='Visibility'}</label>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox" id="{$label_attr.for}" name="{$name}" value="1" {if $value != 0}checked="checked"{/if}>
+                                                        {$label}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {/form_field}
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="control-group">
+                                                <lablel>&nbsp;</lablel>
+                                                <div class="controls">
+                                                    <p>{intl l='Menu created on %date_create. Last modification: %date_change' date_create="{format_date date=$CREATE_DATE}" date_change="{format_date date=$UPDATE_DATE}" d='menu'}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    </form>
+                                    {/form}
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/loop}
+        </div>
+    </div>
+</div>
+{/block}
