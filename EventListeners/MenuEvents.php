@@ -154,7 +154,7 @@ class MenuEvents extends ActionEvent
      * @return bool
      */
     public function hasMenu()
-    {
+    {        
         return null !== $this->menu;
     }
 }

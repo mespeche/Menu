@@ -178,7 +178,7 @@ class MenuController extends AbstractCrudController
      * @return bool
      */
     protected function eventContainsObject($event)
-    {
+    {        
         return $event->hasMenu();
     }
 

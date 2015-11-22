@@ -44,7 +44,7 @@ class Menu implements EventSubscriberInterface
 {
 
     public function createMenu(MenuEvents $event)
-    {                
+    {
         $menu = new \Menu\Model\Menu();
 
         $menu->setLocale($event->getLocale())

@@ -20,11 +20,11 @@
         -->
     </commands>
 
-    <!--
     <services>
-
+        <service id="menu.action" class="Menu\Action\Menu">
+            <tag name="kernel.event_subscriber"/>
+        </service>
     </services>
-    -->
 
     <!--
     <hooks>
